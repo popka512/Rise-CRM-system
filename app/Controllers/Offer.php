@@ -145,9 +145,7 @@ class Offer extends Security_Controller {
         if (get_setting("add_signature_option_on_accepting_proposal")) {
             $validation_array["signature"] = "required";
         }
-        // file upload
-        $target_path = get_setting("timeline_file_path");
-        $files_data = move_files_from_temp_dir_to_permanent_dir($target_path, "offer");
+        
         
         $this->validate_submitted_data($validation_array);
 
@@ -164,8 +162,12 @@ class Offer extends Security_Controller {
 
         $name = $this->request->getPost("name");
         $email = $this->request->getPost("email");
-        $id_card = $this->request->getPost("id_card");
+        $id_number = $this->request->getPost("id_number");
         $signature = $this->request->getPost("signature");
+
+        // file upload
+        $target_path = get_setting("timeline_file_path");
+        $files_data = move_files_from_temp_dir_to_permanent_dir($target_path, "offer");
 
         $meta_data = array();
         $proposal_data = array();
@@ -179,15 +181,27 @@ class Offer extends Security_Controller {
             $meta_data["signature"] = $signature;
             $meta_data["signed_date"] = get_current_utc_time();
         }
-
+        //in case of file upload
+        $uploaded_pdf_files = @unserialize($files_data);
+        $uploaded_pdf_file = $uploaded_pdf_files[0];
+        $uploaded_pdf_file_name = get_array_value($uploaded_pdf_file, "file_name");
+        if($uploaded_pdf_file_name ) {
+            $meta_data["files"]=$files_data;
+        }
+        
         if ($name) {
             //from public proposal
             if (!$email) {
                 show_404();
             }
-
+            $client_info = $this->Clients_model->get_one($proposal_info->client_id);
+            if (!$client_info|| $client_info->vat_number !== $id_number) {
+                show_404();
+            }
             $meta_data["name"] = $name;
             $meta_data["email"] = $email;
+            $meta_data["id_number"]=$id_number;
+
         } else {
             //from preview, should be logged in client contact
             $this->init_permission_checker("proposal");

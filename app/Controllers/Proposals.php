@@ -353,7 +353,7 @@ class Proposals extends Security_Controller {
             $edit = modal_anchor(get_uri("proposals/modal_form"), "<i data-feather='edit' class='icon-16'></i>", array("class" => "edit", "title" => app_lang('edit_proposal'), "data-post-id" => $data->id));
         }
 
-        $row_data[] = anchor(get_uri("offer/preview_verification/" . $data->id . "/" . $data->public_key), "<i data-feather='external-link' class='icon-16'></i>", array("class" => "edit", "title" => app_lang('proposal') . " " . app_lang("url"), "target" => "_blank"))
+        $row_data[] = anchor(get_uri("offer/preview/" . $data->id . "/" . $data->public_key), "<i data-feather='external-link' class='icon-16'></i>", array("class" => "edit", "title" => app_lang('proposal') . " " . app_lang("url"), "target" => "_blank"))
                 . $edit
                 . js_anchor("<i data-feather='x' class='icon-16'></i>", array('title' => app_lang('delete_proposal'), "class" => "delete", "data-id" => $data->id, "data-action-url" => get_uri("proposals/delete"), "data-action" => "delete-confirmation"));
 
@@ -801,7 +801,7 @@ class Proposals extends Security_Controller {
         $parser_data["CONTACT_FIRST_NAME"] = $contact_info->first_name;
         $parser_data["CONTACT_LAST_NAME"] = $contact_info->last_name;
         $parser_data["PROPOSAL_URL"] = get_uri("proposals/preview/" . $proposal_info->id);
-        $parser_data["PUBLIC_PROPOSAL_URL"] = get_uri("offer/preview_verification/" . $proposal_info->id . "/" . $proposal_info->public_key);
+        $parser_data["PUBLIC_PROPOSAL_URL"] = get_uri("offer/preview/" . $proposal_info->id . "/" . $proposal_info->public_key);
         $parser_data['SIGNATURE'] = get_array_value($email_template, "signature_$contact_language") ? get_array_value($email_template, "signature_$contact_language") : get_array_value($email_template, "signature_default");
         $parser_data["LOGO_URL"] = get_logo_url();
         $parser_data["RECIPIENTS_EMAIL_ADDRESS"] = $contact_info->email;
@@ -915,6 +915,44 @@ class Proposals extends Security_Controller {
         $proposal_info = $this->Proposals_model->get_one($proposal_id);
         if ($proposal_info->status == "draft") {
             return true;
+        }
+    }
+    function download_pdf($proposal_id = 0, $mode = "download", $user_language = "") {
+        if ($proposal_id) {
+            validate_numeric_value($proposal_id);
+            $proposal_data=$this->Proposals_model->get_details(array("id" => $proposal_id))->getRow();
+            $signer_info = @unserialize($proposal_data->meta_data);
+            if(!$signer_info){echo show_404();}
+            $uploaded_pdf_file = @unserialize(get_array_value($signer_info, "files"));
+            $uploaded_pdf_file_name = get_array_value($uploaded_pdf_file, "file_name");
+            $signature_file = get_source_url_of_file($uploaded_pdf_file_name, get_setting("timeline_file_path"), "thumbnail");
+       
+            prepare_proposal_pdf($proposal_data, $mode);
+
+                            
+            // $invoice_data = get_invoice_making_data($proposal_id);
+            // $this->_check_invoice_access_permission($invoice_data);
+
+            // if ($user_language) {
+            //     $language = Services::language();
+
+            //     $active_locale = $language->getLocale();
+
+            //     if ($user_language && $user_language !== $active_locale) {
+            //         $language->setLocale($user_language);
+            //     }
+
+                // prepare_invoice_pdf($invoice_data, $mode);
+
+            //     if ($user_language && $user_language !== $active_locale) {
+            //         // Reset to active locale
+            //         $language->setLocale($active_locale);
+            //     }
+            // } else {
+            //     prepare_invoice_pdf($invoice_data, $mode);
+            // }
+        } else {
+            show_404();
         }
     }
 

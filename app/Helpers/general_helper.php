@@ -1,12 +1,13 @@
 <?php
-
+// require_once('tcpdf_include.php');
+require_once APPPATH . "ThirdParty/tcpdf/tcpdf_import.php";
 use App\Controllers\Security_Controller;
 use App\Controllers\Notification_processor;
 use App\Controllers\App_Controller;
 use App\Libraries\Pdf;
 use App\Libraries\Clean_data;
 use App\Libraries\Outlook_smtp;
-
+// require_once('tcpdf.php');
 /**
  * use this to print link location
  *
@@ -811,7 +812,96 @@ if (!function_exists('prepare_invoice_pdf')) {
     }
 
 }
+/**
+ * get all data to make an invoice
+ * 
+ * @param Proposal making data $invoice_data
+ * @return array
+ */
 
+if (!function_exists('prepare_proposal_pdf')) {
+
+    function prepare_proposal_pdf($proposal_data, $mode = "download") {
+        
+        if (!$proposal_data) {
+            show_404();
+            return;
+        }
+    
+        $signer_info = @unserialize($proposal_data->meta_data);
+        $signature_file = "";
+    
+        if (get_array_value($signer_info, "files")) {
+            $uploaded_pdf_files = @unserialize(get_array_value($signer_info, "files"));
+            $uploaded_pdf_file = $uploaded_pdf_files[0];
+            $uploaded_pdf_file_name = get_array_value($uploaded_pdf_file, "file_name");
+    
+            // Get the file URL or local path
+            $signature_file = get_source_url_of_file($uploaded_pdf_file, get_setting("timeline_file_path"), "thumbnail");
+        }
+    
+        if (!$signature_file) {
+            die("No PDF file available.");
+        }
+    
+        // Determine if the file is a URL or a local file
+        $is_url = filter_var($signature_file, FILTER_VALIDATE_URL);
+    
+        if ($mode === "download") {
+            if ($is_url) {
+                // Handle downloading from URL using cURL
+                $file_content = fetchFileFromUrl($signature_file);
+                if ($file_content === false) {
+                    die("Failed to download PDF.");
+                }
+                header("Content-Type: application/pdf");
+                header("Content-Disposition: attachment; filename=\"$uploaded_pdf_file_name\"");
+                header("Content-Length: " . strlen($file_content));
+                echo $file_content;
+            } else {
+                // Handle downloading local file
+                if (!file_exists($signature_file)) {
+                    die("File not found.");
+                }
+                header("Content-Type: application/pdf");
+                header("Content-Disposition: attachment; filename=\"$uploaded_pdf_file_name\"");
+                header("Content-Length: " . filesize($signature_file));
+                readfile($signature_file);
+            }
+            exit;
+        } 
+        else if ($mode === "view") {
+            if ($is_url) {
+                // View PDF from URL
+                header("Location: " . $signature_file);
+            } else {
+                // View local PDF
+                if (!file_exists($signature_file)) {
+                    die("File not found.");
+                }
+                header("Content-Type: application/pdf");
+                header("Content-Disposition: inline; filename=\"$uploaded_pdf_file_name\"");
+                header("Content-Length: " . filesize($signature_file));
+                readfile($signature_file);
+            }
+            exit;
+        } 
+        else {
+            die("Invalid mode specified.");
+        }
+    }
+
+}
+function fetchFileFromUrl($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification (use cautiously)
+    $content = curl_exec($ch);
+    curl_close($ch);
+    return $content;
+}
 /**
  * get all data to make an estimate
  * 

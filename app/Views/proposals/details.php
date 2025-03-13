@@ -104,6 +104,7 @@
                     <div class="p15">
                         <div><strong><?php echo app_lang("name"); ?>: </strong><?php echo $proposal_info->accepted_by ? get_client_contact_profile_link($proposal_info->accepted_by, $proposal_info->signer_name) : get_array_value($signer_info, "name"); ?></div>
                         <div><strong><?php echo app_lang("email"); ?>: </strong><?php echo $proposal_info->signer_email ? $proposal_info->signer_email : get_array_value($signer_info, "email"); ?></div>
+                        <div><strong><?php echo "DNI/NIF"; ?>: </strong><?php echo get_array_value($signer_info, "id_number")?get_array_value($signer_info, "id_number"):""; ?></div>
                         <?php if (get_array_value($signer_info, "signed_date")) { ?>
                             <div><strong><?php echo app_lang("signed_date"); ?>: </strong><?php echo format_to_relative_time(get_array_value($signer_info, "signed_date")); ?></div>
                         <?php } ?>
@@ -116,6 +117,31 @@
                             ?>
                             <div><strong><?php echo app_lang("signature"); ?>: </strong><br /><img class="signature-image" src="<?php echo $signature_file; ?>" alt="<?php echo $signature_file_name; ?>" /></div>
                             <?php } ?>
+
+                        <?php
+                        if (get_array_value($signer_info,"files")){
+                            $uploaded_pdf_files = @unserialize(get_array_value($signer_info, "files"));
+                            $uploaded_pdf_file = $uploaded_pdf_files[0];
+                            $uploaded_pdf_file_name = get_array_value($uploaded_pdf_file, "file_name");
+                        
+                        ?>
+                            <?php echo anchor(get_uri("proposals/download_pdf/" . $proposal_info->id . "/view"), "<i data-feather='file-text' class='icon-16'></i> " . app_lang('view_pdf'), array("title" => app_lang('view_pdf'), "target" => "_blank", "class" => "dropdown-item btn btn-info ")); ?>
+                        <?php } else {?>
+                            <?php echo "<strong>No Uploaded File</strong>" ?>
+                        <?php }?>
+
+                            <!-- <span class="dropdown inline-block">
+                            <button class="btn btn-info text-white dropdown-toggle caret" type="button" data-bs-toggle="dropdown" aria-expanded="true">
+                                <i data-feather="tool" class="icon-16"></i> <?php echo app_lang('actions'); ?>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                
+                                <li role="presentation"><?php echo anchor(get_uri("proposals/download_pdf/" . $proposal_info->id), "<i data-feather='download' class='icon-16'></i> " . app_lang('download_pdf'), array("title" => app_lang('download_pdf'), "class" => "dropdown-item")); ?> </li>
+                                <li role="presentation"> </li>
+                                
+
+                            </ul>
+                        </span> -->
                     </div>
                 </div>
             <?php } ?>

@@ -146,17 +146,17 @@ class Invoices_model extends Crud_model {
             SELECT $invoices_table.id, $invoices_table.main_invoice_id
             FROM $invoices_table 
             WHERE $invoices_table.deleted=0 AND $invoices_table.main_invoice_id!=0
-        ) AS credit_note_table ON credit_note_table.main_invoice_id=$invoices_table.id
-        LEFT JOIN $clients_table ON $clients_table.id= $invoices_table.client_id
-        LEFT JOIN $projects_table ON $projects_table.id= $invoices_table.project_id
-        LEFT JOIN $users_table ON $users_table.id= $invoices_table.cancelled_by
+        ) AS credit_note_table ON credit_note_table.main_invoice_id = $invoices_table.id
+        LEFT JOIN $clients_table ON $clients_table.id = $invoices_table.client_id
+        LEFT JOIN $projects_table ON $projects_table.id = $invoices_table.project_id
+        LEFT JOIN $users_table ON $users_table.id = $invoices_table.cancelled_by
         LEFT JOIN (SELECT $taxes_table.* FROM $taxes_table) AS tax_table ON tax_table.id = $invoices_table.tax_id
         LEFT JOIN (SELECT $taxes_table.* FROM $taxes_table) AS tax_table2 ON tax_table2.id = $invoices_table.tax_id2
         LEFT JOIN (SELECT $taxes_table.* FROM $taxes_table) AS tax_table3 ON tax_table3.id = $invoices_table.tax_id3
         LEFT JOIN (SELECT invoice_id, SUM(amount) AS payment_received FROM $invoice_payments_table WHERE deleted=0 GROUP BY invoice_id) AS payments_table ON payments_table.invoice_id = $invoices_table.id 
         LEFT JOIN (SELECT invoice_id, SUM(total) AS invoice_value FROM $invoice_items_table WHERE deleted=0 GROUP BY invoice_id) AS items_table ON items_table.invoice_id = $invoices_table.id 
         $join_custom_fieds
-        WHERE $invoices_table.deleted=0 $where $custom_fields_where";
+        WHERE $invoices_table.deleted = 0 $where $custom_fields_where";
         return $this->db->query($sql);
     }
 

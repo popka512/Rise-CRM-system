@@ -195,7 +195,7 @@ if (!function_exists('get_notification_config')) {
             if (isset($options->proposal_id)) {
                 $url = get_uri("proposals/preview/" . $options->proposal_id . "/1");
                 // $public_url = get_uri("offer/preview/" . $options->proposal_id);
-                $public_url = get_uri("offer/preview_verification/" . $options->proposal_id);
+                $public_url = get_uri("offer/preview/" . $options->proposal_id);
             }
 
             return array("url" => $url, "public_url" => $public_url);

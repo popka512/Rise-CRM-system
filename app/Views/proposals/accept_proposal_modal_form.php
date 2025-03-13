@@ -44,14 +44,14 @@
             </div>
             <div class="form-group">
                 <div class="row">
-                    <label for="id_card" class="col-md-3"><?php echo app_lang('id'); ?></label>
+                    <label for="id_number" class="col-md-3">DNI/NIF</label>
                     <div class="col-md-9">
                         <?php
                         echo form_input(array(
-                            "id" => "id_card",
-                            "name" => "id_card",
+                            "id" => "id_number",
+                            "name" => "id_number",
                             "class" => "form-control",
-                            "placeholder" => app_lang('id'),
+                            "placeholder" => "DNI/NIF",
                             "data-rule-required" => true,
                             "data-msg-required" => app_lang("field_required"),
                         ));
